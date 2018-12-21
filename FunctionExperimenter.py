@@ -12,7 +12,6 @@ def collatz(number):
         return result
 
 if __name__ == "__main__": 
-    #function_creator()
     n = input("Give me a number: ")
     while n != 1:
         n = collatz(int(n))
