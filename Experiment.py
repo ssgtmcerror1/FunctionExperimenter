@@ -23,19 +23,21 @@ class Experiment:
 
     @staticmethod
     def chunk_list(result_list, chunk_size):
-        for i in range(0, len(result_list), chunk_size):
+        for i in range(0, len(result_list), chunk_size+1):
             yield result_list[i:i + chunk_size]
 
     def apply_function_orbit(self):
         results = []
 
         for value in self._init_values:
-            orbit = 0
-            current_value = float(value)
-            while orbit <= self._orbit_length-1:
-                result = self._evaluate_function(current_value+orbit)
-                results.append(result)
-                orbit += 1
+            orbit_counter = 0
+            results.append(value)
+            last_result = float(value)
+            while orbit_counter <= self._orbit_length-1:
+                function_result = self._evaluate_function(last_result)
+                results.append(function_result)
+                orbit_counter += 1
+                last_result = function_result
 
         return results
 
@@ -58,7 +60,7 @@ class Experiment:
 
         orbit_header_string = []
         for i in range(0, self._orbit_length):
-            orbit_header_string.append('x_{i+' + str(i) + '}')
+            orbit_header_string.append('x' + str(i))
 
         return orbit_header_string
 
