@@ -12,14 +12,16 @@ class Experiment:
 
     # constructor
     def __init__(self, function, initial_values, orbit_length, var_list, file_to_write):
+        self._csv_header = []
         self._evaluate_function = function
+        self._evaluate_function_results = []
+        self._function_calculation_time = 0
         self._function_name = function.__name__
         self._file_to_write = file_to_write
         self._init_values = initial_values.copy()
         self._orbit_length = orbit_length+1
+        self._var_list_results = []
         self._var_list = var_list.copy()
-        self._results = []
-        self._function_calculation_time = 0
 
     @staticmethod
     def chunk_list(result_list, chunk_size):
@@ -30,49 +32,42 @@ class Experiment:
         results = []
 
         for value in self._init_values:
-            orbit_counter = 0
-            results.append(value)
             last_result = float(value)
+            orbit_counter = 0
+            results.append(float(value))
+
             while orbit_counter <= self._orbit_length-1:
                 function_result = self._evaluate_function(last_result)
-                results.append(function_result)
+                results.append(float(function_result))
                 orbit_counter += 1
                 last_result = function_result
 
         return results
 
-    # generate a list of column headers with function and var list
-    def generate_csv_headers(self, name):
-        column_headers = []
-        length_of_var_list = len(self._var_list)
+    def apply_var_functions(self, result_list):
+        var_results = []
 
-        for i in range(0, self._orbit_length):
-            column_headers.append(name + '[' + str(i) + ']')
+        for var_function in self._var_list:
+            for value in result_list:
+                var_results.append(var_function(float(value)))
 
-        for j in range(0, length_of_var_list):
-            column_headers.append(self._var_list[j])
-
-        return column_headers
+        print(var_results)
+        return var_results
 
     def orbit_headers(self):
-        # should return x0, x1, x2, ..., xn
-        # x_{i+1} = f(x_i)
-
         orbit_header_string = []
+
         for i in range(0, self._orbit_length):
             orbit_header_string.append('x' + str(i))
 
         return orbit_header_string
 
-    # one major method: run the experiment
     def run(self):
-        # record start time
         start_time = timeit.default_timer()
 
-        # make the function repeat function on each initial value
-        self._results = self.apply_function_orbit()
+        self._evaluate_function_results = self.apply_function_orbit()
+        self._var_list_results = self.apply_var_functions(self._evaluate_function_results)
 
-        # calculate execution time
         end_time = timeit.default_timer()
         self._function_calculation_time = (end_time - start_time)
 
@@ -80,50 +75,57 @@ class Experiment:
         print("Function: " + self._function_name)
         print("=======")
 
-        # DEBUG: print orbit headers
+        # DEBUG: print csv header
         orbit_header = self.orbit_headers()
-        print(orbit_header)
+        var_list_header = self.parse_var_list_names()
+        self._csv_header = orbit_header + var_list_header
+
+        print(self._csv_header)
 
         # DEBUG: print function results
-        chunked_results = list(self.chunk_list(self._results, self._orbit_length))
-        index = 0
+        function_chunked_results = list(self.chunk_list(self._evaluate_function_results, self._orbit_length))
+        var_list_chunked_results = list(self.chunk_list(self._var_list_results,
+                                                        (self._orbit_length * len(self._var_list))
+                                                        )
 
+                                        )
+        index = 0
         for value in self._init_values:
             print('f(' + value + ')=', end='')
-            print(chunked_results[index])
+            print(function_chunked_results[index], var_list_chunked_results[index])
             index += 1
 
         # record each var in var_list to file_to_write
-        # TODO: implement this
-
         # write the file list
-        self.write_csv()
+        # self.write_csv()
 
         # DEBUG: print function calculation time
         print("=======")
         print("Function evaluated in %f seconds. \n" % self._function_calculation_time)
 
+    # parses the var list which is later used to append to the csv headers
+    def parse_var_list_names(self):
+        var_list = []
+
+        for item in self._var_list:
+            for i in range(0, self._orbit_length):
+                var_list.append(item.__name__ + "_" + str(i))
+
+        return var_list
+
     # writes the csv file with results
     def write_csv(self):
+
+        function_results = list(self.chunk_list(self._evaluate_function_results, self._orbit_length))
+        var_results = list(self.chunk_list(self._var_list_results, (self._orbit_length*len(self._var_list))))
+
         file = open(self._file_to_write, 'w', newline='')
         with file:
             writer = csv.writer(file)
+            writer.writerow(self._csv_header)
 
-            # write function name
-            writer.writerow(['Function: ' + self._function_name])
+            for i in range(0, len(function_results)):
+                row = function_results[i] + var_results[i]
+                writer.writerow(row)
 
-            # orbit headers
-            field_names = self.orbit_headers()
-            writer.writerow([''] + field_names)
-
-            # write results
-            results = list(self.chunk_list(self._results, self._orbit_length))
-            for i in range(0, len(results)):
-                writer.writerow(['f(' + str(self._init_values[i]) + ')'] + results[i])
-
-            # header = self.generate_csv_headers()
-            # writer.writerow(header)
-
-            # function calculation time
-            writer.writerow(['Function evaluated in %f seconds.' % self._function_calculation_time])
 
