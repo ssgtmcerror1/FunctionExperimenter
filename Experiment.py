@@ -41,7 +41,6 @@ class Experiment:
                 results.append(float(function_result))
                 orbit_counter += 1
                 last_result = function_result
-
         return results
 
     def apply_var_functions(self, result_list):
