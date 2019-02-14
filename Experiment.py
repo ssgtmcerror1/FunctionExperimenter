@@ -1,6 +1,5 @@
 import csv
-import timeit
-import string
+import itertools
 
 # FunctionExperimenter class
 # Andrew Penland and David Walsh, 2019
@@ -23,6 +22,15 @@ class Experiment:
         self._var_list_results = []
         self._var_list = var_list.copy()
 
+    @staticmethod
+    def chunk_list(result_list, chunk_size):
+        for i in range(0, len(result_list), chunk_size):
+            yield result_list[i:i + chunk_size]
+
+    @staticmethod
+    def slice_per(source, step):
+        return [source[i::step] for i in range(step)]
+
     def apply_function_orbit(self):
         results = []
         value_results = []
@@ -43,32 +51,27 @@ class Experiment:
             results.append(value_results)
             value_results = []
 
-        print("results=", results)
         return results
 
     def apply_var_functions(self):
         var_results = []
         function_results = []
-        index = 0
 
         for var_function in self._var_list:
-            for value in results_list:
-                current_value = var_function(results_list[value])
-                function_results.append(current_value)
+            for result_list in self._evaluate_function_results:
+                for value in result_list:
+                    current_value = var_function(value)
+                    function_results.append(current_value)
 
-            var_results.append(function_results)
-            function_results = []
-            index += 1
+                var_results.append(function_results)
+                function_results = []
 
-        var_results.append(function_results)
-
-        print("var_results=", var_results)
         return var_results
 
     def orbit_headers(self):
         orbit_header_string = []
 
-        for i in range(0, self._orbit_length):
+        for i in range(0, self._orbit_length+1):
             orbit_header_string.append('x' + str(i))
 
         return orbit_header_string
@@ -78,33 +81,27 @@ class Experiment:
         self._evaluate_function_results = self.apply_function_orbit()
         self._var_list_results = self.apply_var_functions()
 
-        # DEBUG: print name of the function code passed in
-        print("Function: " + self._function_name)
-        print("=======")
-
         # DEBUG: print csv header
         orbit_header = self.orbit_headers()
         var_list_header = self.parse_var_list_names()
         self._csv_header = orbit_header + var_list_header
 
-        print(self._csv_header)
-
-        # counter = 0
-        # for result in self._evaluate_function_results:
-        #     print('f(' + str(result[counter][0]) + ')=', end='')
-        #     print(result, self._var_list_results[counter])
-        #     counter += 1
+        # print(self._csv_header)
 
         # record each var in var_list to file_to_write
+
         # write the file list
-        # self.write_csv()
+        print(self._evaluate_function_results)
+        print(self._var_list_results)
+
+        #self.write_csv()
 
     # parses the var list which is later used to append to the csv headers
     def parse_var_list_names(self):
         var_list = []
 
         for item in self._var_list:
-            for i in range(0, self._orbit_length):
+            for i in range(0, self._orbit_length+1):
                 var_list.append(item.__name__ + "_" + str(i))
 
         return var_list
@@ -112,14 +109,16 @@ class Experiment:
     # writes the csv file with results
     def write_csv(self):
 
-        function_results = list(self.chunk_list(self._evaluate_function_results, self._orbit_length))
-        var_results = list(self.chunk_list(self._var_list_results, (self._orbit_length*len(self._var_list))))
+        l = self.slice_per(self._var_list_results, self._orbit_length)
+        print(l)
 
         file = open(self._file_to_write, 'w', newline='')
         with file:
             writer = csv.writer(file)
             writer.writerow(self._csv_header)
 
-            for i in range(0, len(function_results)):
-                row = function_results[i] + var_results[i]
+            for item in self._evaluate_function_results:
+                # merged_vars = list(itertools.chain(*l[i]))
+                row = item
+                print(row)
                 writer.writerow(row)

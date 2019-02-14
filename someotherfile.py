@@ -36,9 +36,10 @@ def collatz(number):
 
 new_function_one = Experiment(
     x_plus_one,  # function code
-    ['1', '2', '3', '4', '5'],  # initial values
-    5,  # orbit length
-    [x_plus_one, x_plus_one],  # var list
+    [1,2],  # do 1 to 1000
+    1,  # orbit length
+    [x_plus_one, x_plus_one, x_plus_one],  # var list
+    # is t(n) > n?
     "somefile.csv"  # csv file to save results
     )
 new_function_one.run()
