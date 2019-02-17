@@ -33,7 +33,7 @@ def collatz(number):
     return number
 
 
-values = list(range(1, 1001))
+values = list(range(1, 1000))
 
 new_function_one = Experiment(
     collatz,  # function code
@@ -41,6 +41,7 @@ new_function_one = Experiment(
     5,  # orbit length
     [x_mod_four],  # var list
     "somefile.csv",  # csv file to save results
-    ["check_greater", "check_binary"]  # optional arguments
+    ["check_greater"]  # optional arguments
     )
 new_function_one.run()
+
