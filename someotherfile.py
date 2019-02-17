@@ -1,6 +1,5 @@
 from Experiment import *
 
-
 def x_plus_one(x):
     return x+1
 
@@ -11,6 +10,16 @@ def x_times_ten(x):
 
 def x_mod_four(x):
     return x % 4
+
+
+def orb_mod_four(orbit):
+    # return [x % 4 for x in orbit]
+    return orbit % 4
+
+
+def orb_average(orbit):
+    # return mean(orbit)
+    pass
 
 
 def collatz(number):
@@ -24,19 +33,14 @@ def collatz(number):
     return number
 
 
-# new_function = Experiment(collatz, ['1.0', '2.0', '3.0'], 5, ['a', 'b', 'c'], "somefile.csv")
-# new_function.run()
+values = list(range(1, 1001))
 
-new_function_two = Experiment(
-    x_times_ten,  # function code
-    ['30', '22', '11', '19', '16'],  # initial values
-    10,  # orbit length
-    ['a', 'b', 'c'],  # var list
-    "somefile.csv"  # csv file to save results
+new_function_one = Experiment(
+    collatz,  # function code
+    values,  # initial values
+    5,  # orbit length
+    [x_mod_four],  # var list
+    "somefile.csv",  # csv file to save results
+    ["check_greater", "check_binary"]  # optional arguments
     )
-new_function_two.run()
-
-
-# new_function_three = Experiment(x_mod_four, ['1', '2', '3'], 5, ['a', 'b', 'c'], "somefile.csv")
-# new_function_three.run()
-
+new_function_one.run()
