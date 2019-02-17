@@ -245,6 +245,7 @@ class Experiment:
                 binary_weight_list.append(round(zero_percent, 2))
                 binary_weight_list.append(round(one_percent, 2))
 
+        print(binary_weight_list)
         return binary_weight_list
 
     # Helper function for chunking results.
