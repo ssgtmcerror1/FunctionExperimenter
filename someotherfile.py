@@ -34,13 +34,16 @@ def collatz(number):
     return number
 
 
+values = list(range(1, 1000))
+
 new_function_one = Experiment(
-    x_plus_one,  # function code
-    [1,2],  # do 1 to 1000
-    1,  # orbit length
-    [x_plus_one, x_plus_one, x_plus_one],  # var list
-    # is t(n) > n?
-    "somefile.csv"  # csv file to save results
+    collatz,  # function code
+    values,  # initial values
+    5,  # orbit length
+    [x_mod_four],  # var list
+    "somefile.csv",  # csv file to save results
+    ["check_binary",  # optional arguments
+     "check_average",
+     "check_orbit_average"]
     )
 new_function_one.run()
-
